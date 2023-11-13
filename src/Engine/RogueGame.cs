@@ -11415,9 +11415,14 @@ namespace RogueSurvivor.Engine
             int necrology = m_Player.Sheet.SkillTable.GetSkillLevel((int)Skills.IDs.NECROLOGY);
 
             string deadSince = "???";
+            string causeOfDeath = "???";
             if (necrology > 0)
                 deadSince = WorldTime.MakeTimeDurationMessage(m_Session.WorldTime.TurnCounter - c.Turn);
             lines.Add(String.Format("Death     : {0}.", deadSince));
+            
+            if (necrology > 1)
+                causeOfDeath = c.CauseOfDeath;
+            lines.Add(String.Format("Cause     : {0}.", causeOfDeath));
 
             string infectionEst = "???";
             if (necrology >= Rules.SKILL_NECROLOGY_LEVEL_FOR_INFECTION)
@@ -15884,7 +15889,7 @@ namespace RogueSurvivor.Engine
             {
                 if (!deadGuy.Model.Abilities.IsUndead && canDropCorpse)
                 {
-                    DropCorpse(deadGuy);
+                    DropCorpse(deadGuy, reason);
                 }
             }
 
@@ -15908,7 +15913,7 @@ namespace RogueSurvivor.Engine
                         // Remember skills if any.
                         SkillTable savedSkills = null;
                         if (killer.Sheet.SkillTable != null && killer.Sheet.SkillTable.Skills != null)
-                            savedSkills = new SkillTable(killer.Sheet.SkillTable.Skills);
+                            savedSkills = new SkillTable(killer, killer.Sheet.SkillTable.Skills);
 
                         // Do the transformation.
                         killer.Model = levelUpModel;
@@ -16228,7 +16233,7 @@ namespace RogueSurvivor.Engine
                 tile.AddDecoration(GameImages.DECO_ZOMBIE_REMAINS);
         }
 
-        public void DropCorpse(Actor deadGuy)
+        public void DropCorpse(Actor deadGuy, string causeOfDeath)
         {
             // add blood to deadguy.
             deadGuy.Doll.AddDecoration(DollPart.TORSO, GameImages.BLOODIED);
@@ -16238,7 +16243,7 @@ namespace RogueSurvivor.Engine
             float rotation = m_Rules.Roll(30, 60);
             if (m_Rules.RollChance(50)) rotation = -rotation;
             float scale = 1.0f;
-            Corpse corpse = new Corpse(deadGuy, corpseHp, corpseHp, deadGuy.Location.Map.LocalTime.TurnCounter, rotation, scale);
+            Corpse corpse = new Corpse(deadGuy, corpseHp, corpseHp, deadGuy.Location.Map.LocalTime.TurnCounter, rotation, scale, causeOfDeath);
             deadGuy.Location.Map.AddCorpseAt(corpse, deadGuy.Location.Position);
         }
 
@@ -17338,7 +17343,7 @@ namespace RogueSurvivor.Engine
             if (livingSkills != null && livingSkills.CountSkills > 0)
             {
                 if (newZombie.Sheet.SkillTable == null)
-                    newZombie.Sheet.SkillTable = new SkillTable();
+                    newZombie.Sheet.SkillTable = new SkillTable(newZombie);
                 int nbLivingSkills = livingSkills.CountSkills;
                 int nbSkillsToKeep = livingSkills.CountTotalSkillLevels / 2;
                 for (int i = 0; i < nbSkillsToKeep; i++)
@@ -20505,7 +20510,7 @@ namespace RogueSurvivor.Engine
             if (newPlayerAvatar.Inventory == null)
                 newPlayerAvatar.Inventory = new Inventory(1);
             if (newPlayerAvatar.Sheet.SkillTable == null)
-                newPlayerAvatar.Sheet.SkillTable = new SkillTable();
+                newPlayerAvatar.Sheet.SkillTable = new SkillTable(newPlayerAvatar);
 
             // if follower, leave leader.
             if (newPlayerAvatar.Leader != null)
