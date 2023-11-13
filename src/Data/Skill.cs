@@ -138,8 +138,9 @@ namespace RogueSurvivor.Data
             int bonus = 0;
             if (Actor != null && Actor.HasLeader)
             {
+                int leadership = Actor.Leader.Sheet.SkillTable.GetSkillLevel((int) Gameplay.Skills.IDs.LEADERSHIP);
                 if (id == (int) Gameplay.Skills.IDs.NECROLOGY)
-                    bonus = (int) Math.Ceiling(Actor.Leader.Sheet.SkillTable.GetSkillLevel(id) / 3f);
+                    bonus = (int) Math.Ceiling(Actor.Leader.Sheet.SkillTable.GetSkillLevel(id) / (3f - Math.Floor(leadership/2f)));
                 if (id == (int) Gameplay.Skills.IDs.MEDIC)
                     bonus = (int) Math.Ceiling(Actor.Leader.Sheet.SkillTable.GetSkillLevel(id) / 3f);
                 if (id == (int) Gameplay.Skills.IDs.CARPENTRY)
