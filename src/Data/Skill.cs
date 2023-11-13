@@ -29,6 +29,12 @@ namespace RogueSurvivor.Data
     [Serializable]
     class SkillTable
     {
+        Actor m_Actor;
+        public Actor Actor {
+            get { return m_Actor; }
+            set { m_Actor = value; }
+        }
+
         Dictionary<int, Skill> m_Table;   // allocated only if needed (some actors have 0 skills)
 
         /// <summary>
@@ -91,12 +97,14 @@ namespace RogueSurvivor.Data
             }
         }
 
-        public SkillTable()
+        public SkillTable(Actor actor)
         {
+            this.Actor = actor;
         }
 
-        public SkillTable(IEnumerable<Skill> startingSkills)
+        public SkillTable(Actor actor, IEnumerable<Skill> startingSkills)
         {
+            this.Actor = actor;
             if (startingSkills == null)
                 throw new ArgumentNullException("startingSkills");
 
@@ -125,7 +133,20 @@ namespace RogueSurvivor.Data
             Skill sk = GetSkill(id);
             if (sk == null)
                 return 0;
-            return sk.Level;
+
+            // get a bonus added to your necrology/carpentry if your leader has the skill
+            int bonus = 0;
+            if (Actor != null && Actor.HasLeader)
+            {
+                int leadership = Actor.Leader.Sheet.SkillTable.GetSkillLevel((int) Gameplay.Skills.IDs.LEADERSHIP);
+                if (id == (int) Gameplay.Skills.IDs.NECROLOGY)
+                    bonus = (int) Math.Ceiling(Actor.Leader.Sheet.SkillTable.GetSkillLevel(id) / (3f - Math.Floor(leadership/2f)));
+                if (id == (int) Gameplay.Skills.IDs.MEDIC)
+                    bonus = (int) Math.Ceiling(Actor.Leader.Sheet.SkillTable.GetSkillLevel(id) / 3f);
+                if (id == (int) Gameplay.Skills.IDs.CARPENTRY)
+                    bonus = (int) Math.Ceiling(Actor.Leader.Sheet.SkillTable.GetSkillLevel(id)/2f);
+            }
+            return (int) Math.Min(sk.Level + bonus, Gameplay.Skills.MaxSkillLevel(id));
         }
 
         public void AddSkill(Skill sk)

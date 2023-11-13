@@ -5,11 +5,12 @@ namespace RogueSurvivor.Data
     [Serializable]
     class ActorSheet
     {
-        SkillTable m_SkillTable = new SkillTable();
+        SkillTable m_SkillTable = new SkillTable(null);
 
         [NonSerialized]
-        public static readonly ActorSheet BLANK = new ActorSheet(0, 0, 0, 0, 0, Attack.BLANK, Defence.BLANK, 0, 0, 0, 0);
+        public static readonly ActorSheet BLANK = new ActorSheet(null, 0, 0, 0, 0, 0, Attack.BLANK, Defence.BLANK, 0, 0, 0, 0);
 
+        public Actor Actor { get; private set; }
         public int BaseHitPoints { get; private set; }
         public int BaseStaminaPoints { get; private set; }
         public int BaseFoodPoints { get; private set; }
@@ -28,12 +29,13 @@ namespace RogueSurvivor.Data
             set { m_SkillTable = value; }
         }
 
-        public ActorSheet(int baseHitPoints, int baseStaminaPoints,
+        public ActorSheet(Actor actor, int baseHitPoints, int baseStaminaPoints,
             int baseFoodPoints, int baseSleepPoints, int baseSanity,
             Attack unarmedAttack, Defence baseDefence,
             int baseViewRange, int baseAudioRange, int smellRating,
             int inventoryCapacity)
         {
+            this.Actor = actor;
             this.BaseHitPoints = baseHitPoints;
             this.BaseStaminaPoints = baseStaminaPoints;
             this.BaseFoodPoints = baseFoodPoints;
@@ -47,11 +49,12 @@ namespace RogueSurvivor.Data
             this.BaseInventoryCapacity = inventoryCapacity;
         }
 
-        public ActorSheet(ActorSheet copyFrom)
+        public ActorSheet(Actor actor, ActorSheet copyFrom)
         {
             if (copyFrom == null)
                 throw new ArgumentNullException("copyFrom");
 
+            this.Actor = actor;
             this.BaseHitPoints = copyFrom.BaseHitPoints;
             this.BaseStaminaPoints = copyFrom.BaseStaminaPoints;
             this.BaseFoodPoints = copyFrom.BaseFoodPoints;
@@ -65,7 +68,7 @@ namespace RogueSurvivor.Data
             this.BaseInventoryCapacity = copyFrom.BaseInventoryCapacity;
 
             if (copyFrom.SkillTable.Skills != null)
-                m_SkillTable = new SkillTable(copyFrom.SkillTable.Skills);
+                m_SkillTable = new SkillTable(this.Actor, copyFrom.SkillTable.Skills);
         }
     }
 }

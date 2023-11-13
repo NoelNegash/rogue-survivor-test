@@ -501,7 +501,7 @@ namespace RogueSurvivor.Data
             ActorModel model = this.Model;
 
             m_Doll = new Doll(model.DollBody);
-            m_Sheet = new ActorSheet(model.StartingSheet);
+            m_Sheet = new ActorSheet(this, model.StartingSheet);
 
             // starting points maxed.
             m_ActionPoints = m_Doll.Body.Speed;
